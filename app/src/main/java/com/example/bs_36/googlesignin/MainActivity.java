@@ -1,323 +1,109 @@
 package com.example.bs_36.googlesignin;
 
-import java.io.InputStream;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.content.IntentSender.SendIntentException;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.AdapterView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
+import com.mikepenz.iconics.typeface.FontAwesome;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.Nameable;
 
-public class MainActivity extends ActionBarActivity implements OnClickListener,
-		ConnectionCallbacks, OnConnectionFailedListener {
 
-	private static final int RC_SIGN_IN = 0;
-	// Logcat tag
-	private static final String TAG = "MainActivity";
+public class MainActivity extends ActionBarActivity {
 
-	// Profile pic image size in pixels
-	private static final int PROFILE_PIC_SIZE = 400;
+    private Drawer.Result result;
 
-	// Google client to interact with Google API
-	private GoogleApiClient mGoogleApiClient;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-	/**
-	 * A flag indicating that a PendingIntent is in progress and prevents us
-	 * from starting further intents.
-	 */
-	private boolean mIntentInProgress;
+        initDrawer();
 
-	private boolean mSignInClicked;
+    }
 
-	private ConnectionResult mConnectionResult;
+    private void initDrawer() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-	private SignInButton btnSignIn;
-	private Button btnSignOut, btnRevokeAccess;
-	private ImageView imgProfilePic;
-	private TextView txtName, txtEmail;
-	private LinearLayout llProfileLayout;
+        // Handle Toolbar
+        result = new Drawer()
+                .withActivity(this)
+                .withToolbar(toolbar)
+                .withActionBarDrawerToggle(true)
+                .withTranslucentStatusBar(true)
+                .addDrawerItems(
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_candidates).withIcon(FontAwesome.Icon.faw_male).withIdentifier(0),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_polling_stations).withIcon(FontAwesome.Icon.faw_home).withIdentifier(1),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_map).withIcon(FontAwesome.Icon.faw_globe).withIdentifier(2),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_section_nearest).withIcon(FontAwesome.Icon.faw_map_marker).withIdentifier(3),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_share).withIcon(FontAwesome.Icon.faw_share_alt).withIdentifier(4),
+                        new PrimaryDrawerItem().withName(R.string.drawer_item_info).withIcon(FontAwesome.Icon.faw_info_circle).withIdentifier(5)
+                )
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
+                        if (drawerItem instanceof Nameable) {
+                            getSupportActionBar().setTitle(((Nameable) drawerItem).getNameRes());
+                            Fragment fragment = null;
+//                            if (drawerItem.getIdentifier() == 0) {
+//                                fragment = new Fragment_1();
+//                            }
+//                              else if (drawerItem.getIdentifier() == 1) {
+//                                startActivity(new Intent(MainActivity.this, PollingStationActivity.class));
+//                            } else if (drawerItem.getIdentifier() == 2) {
+//                                startActivity(new Intent(MainActivity.this, Map.class));
+//                            } else if (drawerItem.getIdentifier() == 3) {
+//                                startActivity(new Intent(MainActivity.this, NearestVenue.class));
+//                            } else if (drawerItem.getIdentifier() == 4) {
+//                                startActivity(new Intent(MainActivity.this, ShareActivity.class));
+//                            } else if (drawerItem.getIdentifier() == 5) {
+//                                startActivity(new Intent(MainActivity.this, Info1.class));
+//                            }
+                            if(fragment != null){
+                                FragmentManager fragmentManager = getSupportFragmentManager();
+                                fragmentManager.beginTransaction()
+                                        .replace(R.id.fragment_container, fragment)
+                                        .commit();
+                            }
+                        }
+                    }
+                })
+                .withSelectedItem(0)
+                .build();
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+//        result.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
+    }
 
-		btnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
-		btnSignOut = (Button) findViewById(R.id.btn_sign_out);
-		btnRevokeAccess = (Button) findViewById(R.id.btn_revoke_access);
-		imgProfilePic = (ImageView) findViewById(R.id.imgProfilePic);
-		txtName = (TextView) findViewById(R.id.txtName);
-		txtEmail = (TextView) findViewById(R.id.txtEmail);
-		llProfileLayout = (LinearLayout) findViewById(R.id.llProfile);
 
-		// Button click listeners
-		btnSignIn.setOnClickListener(this);
-		btnSignOut.setOnClickListener(this);
-		btnRevokeAccess.setOnClickListener(this);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 
-		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.addConnectionCallbacks(this)
-				.addOnConnectionFailedListener(this).addApi(Plus.API)
-				.addScope(Plus.SCOPE_PLUS_LOGIN).build();
-	}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
-	protected void onStart() {
-		super.onStart();
-		mGoogleApiClient.connect();
-	}
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
 
-	protected void onStop() {
-		super.onStop();
-		if (mGoogleApiClient.isConnected()) {
-			mGoogleApiClient.disconnect();
-		}
-	}
-
-	/**
-	 * Method to resolve any signin errors
-	 * */
-	private void resolveSignInError() {
-		if (mConnectionResult.hasResolution()) {
-			try {
-				mIntentInProgress = true;
-				mConnectionResult.startResolutionForResult(this, RC_SIGN_IN);
-			} catch (SendIntentException e) {
-				mIntentInProgress = false;
-				mGoogleApiClient.connect();
-			}
-		}
-	}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult result) {
-		if (!result.hasResolution()) {
-			GooglePlayServicesUtil.getErrorDialog(result.getErrorCode(), this,
-					0).show();
-			return;
-		}
-
-		if (!mIntentInProgress) {
-			// Store the ConnectionResult for later usage
-			mConnectionResult = result;
-
-			if (mSignInClicked) {
-				// The user has already clicked 'sign-in' so we attempt to
-				// resolve all
-				// errors until the user is signed in, or they cancel.
-				resolveSignInError();
-			}
-		}
-
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int responseCode,
-			Intent intent) {
-		if (requestCode == RC_SIGN_IN) {
-			if (responseCode != RESULT_OK) {
-				mSignInClicked = false;
-			}
-
-			mIntentInProgress = false;
-
-			if (!mGoogleApiClient.isConnecting()) {
-				mGoogleApiClient.connect();
-			}
-		}
-	}
-
-	@Override
-	public void onConnected(Bundle arg0) {
-		mSignInClicked = false;
-		Toast.makeText(this, "User is connected!", Toast.LENGTH_LONG).show();
-
-		// Get user's information
-		getProfileInformation();
-
-		// Update the UI after signin
-		updateUI(true);
-
-	}
-
-	/**
-	 * Updating the UI, showing/hiding buttons and profile layout
-	 * */
-	private void updateUI(boolean isSignedIn) {
-		if (isSignedIn) {
-			btnSignIn.setVisibility(View.GONE);
-			btnSignOut.setVisibility(View.VISIBLE);
-			btnRevokeAccess.setVisibility(View.VISIBLE);
-			llProfileLayout.setVisibility(View.VISIBLE);
-		} else {
-			btnSignIn.setVisibility(View.VISIBLE);
-			btnSignOut.setVisibility(View.GONE);
-			btnRevokeAccess.setVisibility(View.GONE);
-			llProfileLayout.setVisibility(View.GONE);
-		}
-	}
-
-	/**
-	 * Fetching user's information name, email, profile pic
-	 * */
-	private void getProfileInformation() {
-		try {
-			if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
-				Person currentPerson = Plus.PeopleApi
-						.getCurrentPerson(mGoogleApiClient);
-				String personName = currentPerson.getDisplayName();
-				String personPhotoUrl = currentPerson.getImage().getUrl();
-				String personGooglePlusProfile = currentPerson.getUrl();
-				String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
-
-				Log.e(TAG, "Name: " + personName + ", plusProfile: "
-						+ personGooglePlusProfile + ", email: " + email
-						+ ", Image: " + personPhotoUrl);
-
-				txtName.setText(personName);
-				txtEmail.setText(email);
-
-				// by default the profile url gives 50x50 px image only
-				// we can replace the value with whatever dimension we want by
-				// replacing sz=X
-				personPhotoUrl = personPhotoUrl.substring(0,
-						personPhotoUrl.length() - 2)
-						+ PROFILE_PIC_SIZE;
-
-				new LoadProfileImage(imgProfilePic).execute(personPhotoUrl);
-
-			} else {
-				Toast.makeText(getApplicationContext(),
-						"Person information is null", Toast.LENGTH_LONG).show();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void onConnectionSuspended(int arg0) {
-		mGoogleApiClient.connect();
-		updateUI(false);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	/**
-	 * Button on click listener
-	 * */
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.btn_sign_in:
-			// Signin button clicked
-			signInWithGplus();
-			break;
-		case R.id.btn_sign_out:
-			// Signout button clicked
-			signOutFromGplus();
-			break;
-		case R.id.btn_revoke_access:
-			// Revoke access button clicked
-			revokeGplusAccess();
-			break;
-		}
-	}
-
-	/**
-	 * Sign-in into google
-	 * */
-	private void signInWithGplus() {
-		if (!mGoogleApiClient.isConnecting()) {
-			mSignInClicked = true;
-			resolveSignInError();
-		}
-	}
-
-	/**
-	 * Sign-out from google
-	 * */
-	private void signOutFromGplus() {
-		if (mGoogleApiClient.isConnected()) {
-			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
-			mGoogleApiClient.disconnect();
-			mGoogleApiClient.connect();
-			updateUI(false);
-		}
-	}
-
-	/**
-	 * Revoking access from google
-	 * */
-	private void revokeGplusAccess() {
-		if (mGoogleApiClient.isConnected()) {
-			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
-			Plus.AccountApi.revokeAccessAndDisconnect(mGoogleApiClient)
-					.setResultCallback(new ResultCallback<Status>() {
-						@Override
-						public void onResult(Status arg0) {
-							Log.e(TAG, "User access revoked!");
-							mGoogleApiClient.connect();
-							updateUI(false);
-						}
-
-					});
-		}
-	}
-
-	/**
-	 * Background Async task to load user profile picture from url
-	 * */
-	private class LoadProfileImage extends AsyncTask<String, Void, Bitmap> {
-		ImageView bmImage;
-
-		public LoadProfileImage(ImageView bmImage) {
-			this.bmImage = bmImage;
-		}
-
-		protected Bitmap doInBackground(String... urls) {
-			String urldisplay = urls[0];
-			Bitmap mIcon11 = null;
-			try {
-				InputStream in = new java.net.URL(urldisplay).openStream();
-				mIcon11 = BitmapFactory.decodeStream(in);
-			} catch (Exception e) {
-				Log.e("Error", e.getMessage());
-				e.printStackTrace();
-			}
-			return mIcon11;
-		}
-
-		protected void onPostExecute(Bitmap result) {
-			bmImage.setImageBitmap(result);
-		}
-	}
-
+        return super.onOptionsItemSelected(item);
+    }
 }
