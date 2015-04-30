@@ -1,5 +1,7 @@
 package com.example.bs_36.googlesignin;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -39,8 +42,9 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 
 	// Profile pic image size in pixels
 	private static final int PROFILE_PIC_SIZE = 400;
+    private static String profileLocation;
 
-	// Google client to interact with Google API
+    // Google client to interact with Google API
 	private GoogleApiClient mGoogleApiClient;
 
 	/**
@@ -54,12 +58,16 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 	private ConnectionResult mConnectionResult;
 
 	private SignInButton btnSignIn;
-	private Button btnSignOut, btnRevokeAccess;
-	private ImageView imgProfilePic;
+	private Button btnSignOut, btnRevokeAccess, btnStart;
+	private ImageView imgProfilePic, imgCoverPic;
 	private TextView txtName, txtEmail;
 	private LinearLayout llProfileLayout;
+    public static InputStream in;
+    private Bitmap mIcon11, mIconProfile;
+    private String personName;
+    private String email;
 
-	@Override
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_start);
@@ -68,14 +76,17 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 		btnSignOut = (Button) findViewById(R.id.btn_sign_out);
 		btnRevokeAccess = (Button) findViewById(R.id.btn_revoke_access);
 		imgProfilePic = (ImageView) findViewById(R.id.imgProfilePic);
+        imgCoverPic = (ImageView) findViewById(R.id.imgCoverPic);
 		txtName = (TextView) findViewById(R.id.txtName);
 		txtEmail = (TextView) findViewById(R.id.txtEmail);
 		llProfileLayout = (LinearLayout) findViewById(R.id.llProfile);
+        btnStart = (Button)findViewById(R.id.btnStart);
 
 		// Button click listeners
 		btnSignIn.setOnClickListener(this);
 		btnSignOut.setOnClickListener(this);
 		btnRevokeAccess.setOnClickListener(this);
+        btnStart.setOnClickListener(this);
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
@@ -170,11 +181,13 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			btnSignOut.setVisibility(View.VISIBLE);
 			btnRevokeAccess.setVisibility(View.VISIBLE);
 			llProfileLayout.setVisibility(View.VISIBLE);
+            btnStart.setVisibility(View.VISIBLE);
 		} else {
 			btnSignIn.setVisibility(View.VISIBLE);
 			btnSignOut.setVisibility(View.GONE);
 			btnRevokeAccess.setVisibility(View.GONE);
 			llProfileLayout.setVisibility(View.GONE);
+            btnStart.setVisibility(View.GONE);
 		}
 	}
 
@@ -186,14 +199,16 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
 				Person currentPerson = Plus.PeopleApi
 						.getCurrentPerson(mGoogleApiClient);
-				String personName = currentPerson.getDisplayName();
+				personName = currentPerson.getDisplayName();
 				String personPhotoUrl = currentPerson.getImage().getUrl();
+                String personCoverPic = currentPerson.getCover().getCoverPhoto().getUrl();
 				String personGooglePlusProfile = currentPerson.getUrl();
-				String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
+				email = Plus.AccountApi.getAccountName(mGoogleApiClient);
 
 				Log.e(TAG, "Name: " + personName + ", plusProfile: "
 						+ personGooglePlusProfile + ", email: " + email
 						+ ", Image: " + personPhotoUrl);
+                Toast.makeText(StartActivity.this, personCoverPic, Toast.LENGTH_SHORT).show();
 
 				txtName.setText(personName);
 				txtEmail.setText(email);
@@ -201,11 +216,11 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 				// by default the profile url gives 50x50 px image only
 				// we can replace the value with whatever dimension we want by
 				// replacing sz=X
-				personPhotoUrl = personPhotoUrl.substring(0,
-						personPhotoUrl.length() - 2)
+				personPhotoUrl = personPhotoUrl.substring(0, personPhotoUrl.length() - 2)
 						+ PROFILE_PIC_SIZE;
 
 				new LoadProfileImage(imgProfilePic).execute(personPhotoUrl);
+                new LoadCoverImage(imgCoverPic).execute(personCoverPic);
 
 			} else {
 				Toast.makeText(getApplicationContext(),
@@ -247,10 +262,25 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			// Revoke access button clicked
 			revokeGplusAccess();
 			break;
+            case R.id.btnStart:
+                startMain();
+                break;
 		}
 	}
 
-	/**
+    private void startMain() {
+        Intent intentMain = new Intent(StartActivity.this, MainActivity.class);
+        if(mIcon11 !=null){
+            intentMain.putExtra("bitmap", mIcon11);
+            intentMain.putExtra("inputStream", (android.os.Parcelable) in);
+            intentMain.putExtra("name", personName);
+            intentMain.putExtra("email", email);
+            intentMain.putExtra("uri", profileLocation);
+        }
+        startActivity(intentMain);
+    }
+
+    /**
 	 * Sign-in into google
 	 * */
 	private void signInWithGplus() {
@@ -303,9 +333,9 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 
 		protected Bitmap doInBackground(String... urls) {
 			String urldisplay = urls[0];
-			Bitmap mIcon11 = null;
+			mIcon11 = null;
 			try {
-				InputStream in = new java.net.URL(urldisplay).openStream();
+				in = new java.net.URL(urldisplay).openStream();
 				mIcon11 = BitmapFactory.decodeStream(in);
 			} catch (Exception e) {
 				Log.e("Error", e.getMessage());
@@ -316,7 +346,86 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 
 		protected void onPostExecute(Bitmap result) {
 			bmImage.setImageBitmap(result);
+            saveToCacheFile(result);
 		}
 	}
+
+    private class LoadCoverImage extends AsyncTask<String, Void, Bitmap>{
+        ImageView imageViewCover;
+
+        private LoadCoverImage(ImageView imageViewCover) {
+            this.imageViewCover = imageViewCover;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            mIconProfile = null;
+            String urldisplay = urls[0];
+            try {
+                InputStream inputStream = new java.net.URL(urldisplay).openStream();
+                mIconProfile = BitmapFactory.decodeStream(inputStream);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+
+            return mIconProfile;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            imageViewCover.setImageBitmap(bitmap);
+        }
+    }
+
+    public static File getSavePath() {
+        File path;
+        if (hasSDCard()) { // SD card
+            path = new File(getSDCardPath() + "/Srabon/");
+            path.mkdir();
+        } else {
+            path = Environment.getDataDirectory();
+        }
+        return path;
+    }
+    public static String getCacheFilename() {
+        File f = getSavePath();
+        profileLocation = f.getAbsolutePath() + "/profile.png";
+        return f.getAbsolutePath() + "/profile.png";
+    }
+
+    public static Bitmap loadFromFile(String filename) {
+        try {
+            File f = new File(filename);
+            if (!f.exists()) { return null; }
+            Bitmap tmp = BitmapFactory.decodeFile(filename);
+            return tmp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public static Bitmap loadFromCacheFile() {
+        return loadFromFile(getCacheFilename());
+    }
+    public static void saveToCacheFile(Bitmap bmp) {
+        saveToFile(getCacheFilename(),bmp);
+    }
+    public static void saveToFile(String filename,Bitmap bmp) {
+        try {
+            FileOutputStream out = new FileOutputStream(filename);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+            out.close();
+        } catch(Exception e) {}
+    }
+
+    public static boolean hasSDCard() { // SD????????
+        String status = Environment.getExternalStorageState();
+        return status.equals(Environment.MEDIA_MOUNTED);
+    }
+    public static String getSDCardPath() {
+        File path = Environment.getExternalStorageDirectory();
+        return path.getAbsolutePath();
+    }
 
 }

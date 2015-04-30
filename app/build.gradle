@@ -28,4 +28,5 @@ dependencies {
         transitive = true
     }
     compile 'com.android.support:support-v4:22.0.0'
+    compile 'com.ogaclejapan.arclayout:library:1.0.1@aar'
 }

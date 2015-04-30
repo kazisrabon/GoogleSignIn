@@ -1,30 +1,52 @@
 package com.example.bs_36.googlesignin;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.mikepenz.iconics.typeface.FontAwesome;
 import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
+
+import java.io.InputStream;
+import java.net.URI;
 
 
 public class MainActivity extends ActionBarActivity {
 
     private Drawer.Result result;
+    private AccountHeader.Result headerResult;
+    Bitmap bitmap;
+    InputStream inputStream;
+    String name, email;
+    private URI uri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        bitmap = (Bitmap) getIntent().getParcelableExtra("bitmap");
+        inputStream = (InputStream) getIntent().getParcelableExtra("inputStream");
+        name = getIntent().getStringExtra("name");
+        email = getIntent().getStringExtra("email");
+        uri = URI.create(getIntent().getStringExtra("uri"));
+//        Log.e("URI", uri+"");
+        Toast.makeText(MainActivity.this, uri+"", Toast.LENGTH_SHORT).show();
 
         initDrawer();
 
@@ -33,11 +55,42 @@ public class MainActivity extends ActionBarActivity {
     private void initDrawer() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        ProfileDrawerItem profileDrawerItem = new ProfileDrawerItem();
+        profileDrawerItem.setEmail(email);
+        profileDrawerItem.setName(name);
+        profileDrawerItem.setIcon(String.valueOf(uri));
+        ImageView imageView = (ImageView)findViewById(R.id.header);
+        imageView.setImageBitmap(bitmap);
+
+//        if(inputStream != null){
+//
+//            headerResult = new AccountHeader()
+//                    .withActivity(this)
+//                    .withHeaderBackground(R.drawable.header)
+//                    .addProfiles(profileDrawerItem)
+//                    .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+//                        @Override
+//                        public boolean onProfileChanged(View view, IProfile profile, boolean currentProfile) {
+//                            return false;
+//                        }
+//                    })
+//                    .build();
+//        }else
+            {
+                headerResult = new AccountHeader()
+                        .withActivity(this)
+                        .addProfiles(
+                                new ProfileDrawerItem().withName(name).withEmail(email).withIcon(getResources().getDrawable(R.drawable.profile))
+                        )
+                        .build();
+            }
 
         // Handle Toolbar
         result = new Drawer()
                 .withActivity(this)
                 .withToolbar(toolbar)
+                .withHeader(R.layout.header)
+                .withAccountHeader(headerResult)
                 .withActionBarDrawerToggle(true)
                 .withTranslucentStatusBar(true)
                 .addDrawerItems(
