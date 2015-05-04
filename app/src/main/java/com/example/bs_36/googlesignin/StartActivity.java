@@ -1,9 +1,5 @@
 package com.example.bs_36.googlesignin;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
@@ -35,6 +31,10 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
 public class StartActivity extends ActionBarActivity implements OnClickListener,
 		ConnectionCallbacks, OnConnectionFailedListener {
 
@@ -65,10 +65,12 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 	private TextView txtName, txtEmail;
 	private LinearLayout llProfileLayout;
     public static InputStream in;
-    private Bitmap mIcon11, mIconProfile;
+    private Bitmap mIconProfile;
+	public static Bitmap mIcon11;
     private String personName;
     private String email;
     public static Drawable drawable;
+	public static Drawable coverPic;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +187,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			btnRevokeAccess.setVisibility(View.VISIBLE);
 			llProfileLayout.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.VISIBLE);
-            startActivity(new Intent(this, MainActivity.class));
+//            startActivity(new Intent(this, MainActivity.class));
 		} else {
 			btnSignIn.setVisibility(View.VISIBLE);
 			btnSignOut.setVisibility(View.GONE);
@@ -266,7 +268,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			// Revoke access button clicked
 			revokeGplusAccess();
 			break;
-            case R.id.btnStart:
+		case R.id.btnStart:
                 startMain();
                 break;
 		}
@@ -275,11 +277,8 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
     private void startMain() {
         Intent intentMain = new Intent(StartActivity.this, MainActivity.class);
         if(mIcon11 !=null){
-            intentMain.putExtra("bitmap", mIcon11);
-            intentMain.putExtra("inputStream", (android.os.Parcelable) in);
             intentMain.putExtra("name", personName);
             intentMain.putExtra("email", email);
-            intentMain.putExtra("uri", profileLocation);
         }
         startActivity(intentMain);
     }
@@ -380,6 +379,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             imageViewCover.setImageBitmap(bitmap);
+			coverPic = new BitmapDrawable(getResources(), bitmap);
         }
     }
 
