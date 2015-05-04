@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -66,6 +68,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
     private Bitmap mIcon11, mIconProfile;
     private String personName;
     private String email;
+    public static Drawable drawable;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -182,6 +185,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 			btnRevokeAccess.setVisibility(View.VISIBLE);
 			llProfileLayout.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.VISIBLE);
+            startActivity(new Intent(this, MainActivity.class));
 		} else {
 			btnSignIn.setVisibility(View.VISIBLE);
 			btnSignOut.setVisibility(View.GONE);
@@ -346,6 +350,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
 
 		protected void onPostExecute(Bitmap result) {
 			bmImage.setImageBitmap(result);
+            drawable = new BitmapDrawable(getResources(), result);
             saveToCacheFile(result);
 		}
 	}

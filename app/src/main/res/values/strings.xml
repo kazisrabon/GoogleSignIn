@@ -23,5 +23,6 @@
     <string name="btn_logout_from_google">Logout</string>
     <string name="btn_revoke_access">Revoke</string>
     <string name="startMain">Start</string>
+    <string name="drawer_item_free_play">Free Play</string>
 
 </resources>
