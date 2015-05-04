@@ -94,74 +94,74 @@ public class MainActivity extends ActionBarActivity {
 //        }else
             {
                 headerResult = new AccountHeader()
-                        .withActivity(this)
-                        .addProfiles(
-                                new ProfileDrawerItem().withName(name).withEmail(email).withIcon(StartActivity.drawable),
-                                profile,
-                                profile2,
-                                profile3,
-                                profile4,
-                                profile5,
-                                //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
-                                new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_dark_primary_text)).withIdentifier(PROFILE_SETTING),
-                                new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings)
-                        )
-                        .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
-                            @Override
-                            public boolean onProfileChanged(View view, IProfile profile, boolean current) {
-                                //sample usage of the onProfileChanged listener
-                                //if the clicked item has the identifier 1 add a new profile ;)
-                                if (profile instanceof IDrawerItem && ((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
-                                    IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.drawable.profile5));
-                                    if (headerResult.getProfiles() != null) {
-                                        //we know that there are 2 setting elements. set the new profile above them ;)
-                                        headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
-                                    } else {
-                                        headerResult.addProfiles(newProfile);
-                                    }
+                    .withActivity(this)
+                    .addProfiles(
+                            new ProfileDrawerItem().withName(name).withEmail(email).withIcon(StartActivity.drawable),
+                            profile,
+                            profile2,
+                            profile3,
+                            profile4,
+                            profile5,
+                            //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
+                            new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_dark_primary_text)).withIdentifier(PROFILE_SETTING),
+                            new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings)
+                    )
+                    .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+                        @Override
+                        public boolean onProfileChanged(View view, IProfile profile, boolean current) {
+                            //sample usage of the onProfileChanged listener
+                            //if the clicked item has the identifier 1 add a new profile ;)
+                            if (profile instanceof IDrawerItem && ((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
+                                IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.drawable.profile5));
+                                if (headerResult.getProfiles() != null) {
+                                    //we know that there are 2 setting elements. set the new profile above them ;)
+                                    headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
+                                } else {
+                                    headerResult.addProfiles(newProfile);
                                 }
-
-                                //false if you have not consumed the event and it should close the drawer
-                                return false;
                             }
-                        })
-                        .build();
+
+                            //false if you have not consumed the event and it should close the drawer
+                            return false;
+                        }
+                    })
+                    .build();
             }
 
         // Handle Toolbar
         result = new Drawer()
-                .withActivity(this)
-                .withToolbar(toolbar)
-                .withHeader(R.layout.header)
-                .withAccountHeader(headerResult)
-                .withActionBarDrawerToggle(true)
-                .withTranslucentStatusBar(true)
-                .withDisplayBelowToolbar(true)
-                .withSliderBackgroundDrawable(getResources().getDrawable(R.drawable.body))
-                .withDrawerWidthPx(width)
-                .addDrawerItems(
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_candidates).withIcon(FontAwesome.Icon.faw_male).withIdentifier(0),
-                        new SectionDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_polling_stations).withIcon(FontAwesome.Icon.faw_home).withIdentifier(1),
-                        new SectionDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_map).withIcon(FontAwesome.Icon.faw_globe).withIdentifier(2),
-                        new SectionDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_section_nearest).withIcon(FontAwesome.Icon.faw_map_marker).withIdentifier(3),
-                        new SectionDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_share).withIcon(FontAwesome.Icon.faw_share_alt).withIdentifier(4),
-                        new SectionDrawerItem(),
-                        new PrimaryDrawerItem().withName(R.string.drawer_item_info).withIcon(FontAwesome.Icon.faw_info_circle).withIdentifier(5),
-                        new SectionDrawerItem(),
-                        new CustomPrimaryDrawerItem().withBackgroundRes(R.color.accent).withName(R.string.drawer_item_free_play).withIcon(FontAwesome.Icon.faw_gamepad).withIdentifier(6),
-                        new SectionDrawerItem(),
-                        new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withSelectedIconColor(Color.RED).withTintSelectedIcon(true).withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_dark_primary_text)).withTag("Bullhorn").withIdentifier(7)
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
-                        if (drawerItem instanceof Nameable) {
-                            getSupportActionBar().setTitle(((Nameable) drawerItem).getNameRes());
-                            Fragment fragment = null;
+            .withActivity(this)
+            .withToolbar(toolbar)
+            .withHeader(R.layout.header)
+            .withAccountHeader(headerResult)
+            .withActionBarDrawerToggle(true)
+            .withTranslucentStatusBar(true)
+            .withDisplayBelowToolbar(true)
+            .withSliderBackgroundDrawable(getResources().getDrawable(R.drawable.body))
+            .withDrawerWidthPx(width)
+            .addDrawerItems(
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_candidates).withIcon(FontAwesome.Icon.faw_male).withIdentifier(0),
+                    new SectionDrawerItem(),
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_polling_stations).withIcon(FontAwesome.Icon.faw_home).withIdentifier(1),
+                    new SectionDrawerItem(),
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_map).withIcon(FontAwesome.Icon.faw_globe).withIdentifier(2),
+                    new SectionDrawerItem(),
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_section_nearest).withIcon(FontAwesome.Icon.faw_map_marker).withIdentifier(3),
+                    new SectionDrawerItem(),
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_share).withIcon(FontAwesome.Icon.faw_share_alt).withIdentifier(4),
+                    new SectionDrawerItem(),
+                    new PrimaryDrawerItem().withName(R.string.drawer_item_info).withIcon(FontAwesome.Icon.faw_info_circle).withIdentifier(5),
+                    new SectionDrawerItem(),
+                    new CustomPrimaryDrawerItem().withBackgroundRes(R.color.accent).withName(R.string.drawer_item_free_play).withIcon(FontAwesome.Icon.faw_gamepad).withIdentifier(6),
+                    new SectionDrawerItem(),
+                    new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withSelectedIconColor(Color.RED).withTintSelectedIcon(true).withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_dark_primary_text)).withTag("Bullhorn").withIdentifier(7)
+            )
+            .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
+                    if (drawerItem instanceof Nameable) {
+                        getSupportActionBar().setTitle(((Nameable) drawerItem).getNameRes());
+                        Fragment fragment = null;
 //                            if (drawerItem.getIdentifier() == 0) {
 //                                fragment = new Fragment_1();
 //                            }
@@ -176,17 +176,17 @@ public class MainActivity extends ActionBarActivity {
 //                            } else if (drawerItem.getIdentifier() == 5) {
 //                                startActivity(new Intent(MainActivity.this, Info1.class));
 //                            }
-                            if (fragment != null) {
-                                FragmentManager fragmentManager = getSupportFragmentManager();
-                                fragmentManager.beginTransaction()
-                                        .replace(R.id.fragment_container, fragment)
-                                        .commit();
-                            }
+                        if (fragment != null) {
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            fragmentManager.beginTransaction()
+                                    .replace(R.id.fragment_container, fragment)
+                                    .commit();
                         }
                     }
-                })
-                .withSelectedItem(0)
-                .build();
+                }
+            })
+            .withSelectedItem(0)
+            .build();
 
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 //        result.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
