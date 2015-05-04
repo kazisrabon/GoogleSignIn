@@ -380,6 +380,7 @@ public class StartActivity extends ActionBarActivity implements OnClickListener,
         protected void onPostExecute(Bitmap bitmap) {
             imageViewCover.setImageBitmap(bitmap);
 			coverPic = new BitmapDrawable(getResources(), bitmap);
+			startMain();
         }
     }
 
